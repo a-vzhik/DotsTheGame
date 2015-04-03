@@ -1,6 +1,83 @@
 require './player.rb'
 require './player_turn.rb'
 
+class Tree
+	attr_reader :root
+	
+	def initialize (root)
+		@root = root
+	end
+	
+	def to_s
+		@root.to_s
+	end
+end
+
+class TreeItem
+	attr_reader :children, :parent, :data
+	
+	def initialize (data, parent = nil)
+		@children = []
+		@data = data
+		@parent = parent
+	end
+	
+	def add_child (data)
+		child = TreeItem.new(data, self)
+		@children.push child 
+		child
+	end
+	
+	def branch
+		TreeBranch.new(self)
+	end
+	
+	def to_s
+		branch_str = ''
+		if @children.length == 0 then
+			count = 0 
+			TreeBranch.new(self).traverse do |node|
+				branch_str = node.data.to_s + " -> " + branch_str
+				count = count + 1
+			end
+			branch_str = branch_str + "\n"
+			branch_str = '' if count <=4
+		else
+			for child in children 
+				child_str = child.to_s 
+				branch_str = branch_str + child_str if child_str != ''
+			end
+		end
+		branch_str
+	end
+end
+
+class TreeBranch
+
+	def initialize(start_node)
+		@start_node = start_node
+	end
+	
+	def traverse (&block)
+		node = @start_node
+		while node != nil 
+			block.call node
+			node = node.parent
+		end
+	end
+end
+
+class TreeBranchPathLookup
+	def self.has_path?(branch)
+		hash = {}
+		branch.traverse do |node|
+			return true if hash.has_key? node.data
+			hash[node.data] = true
+		end
+		false
+	end
+end
+
 class Game
 	def initialize(grid)
 		@grid = grid
@@ -12,7 +89,7 @@ class Game
 	def acceptTurn (dot)
 		activePlayer.addTurn(PlayerTurn.new(Time.new, dot))
 
-		seizure?
+		#seizure?
 		
 		#@turn = @turn == :first ? :second : :first
 	end
@@ -25,7 +102,34 @@ class Game
 		[@firstPlayer, @secondPlayer]
 	end
 
+	def build_tree(tree_node, dots_hash, dot)
+		for neighbour in neighbours(dot) 
+			next if !dots_hash.has_key? neighbour 
+			
+			child_node = tree_node.add_child neighbour
+			
+			if !TreeBranchPathLookup.has_path? (TreeBranch.new(child_node)) then
+				build_tree(child_node, dots_hash, child_node.data)
+			end
+		end
+	end	
+	
+	def tree
+		dots_hash = {}
+		activePlayer.eachTurn {|turn| dots_hash[turn.dot] = turn.dot}
+		
+		dots_hash.each_key do |dot|
+			puts "Tree for a dot: #{dot}"
+		
+			tree = Tree.new(TreeItem.new(dot))
+			build_tree(tree.root, dots_hash, dot)
+
+			puts tree
+		end
+	end
+	
 	def seizure?
+	
 		dotsHash = {}
 		dotsArray = []
 		activePlayer.eachTurn {|turn| dotsArray.push turn.dot}
@@ -38,12 +142,13 @@ class Game
 				puts "Pathes Found: #{pathes.length}"
 				
 				bestPath = pathes.keys.max_by {|p| square(p.keys)}
-        puts "Square is #{square(bestPath.keys)} for the best path #{bestPath.keys}"
+				puts "Square is #{square(bestPath.keys)} for the best path #{bestPath.keys}"
 				
 				#return pathes[0]
 			end
 		end
 		nil
+		
 	end
 	
 	def square(dots)
@@ -109,3 +214,18 @@ class Game
 		neighbours
 	end
 end
+
+require './grid.rb'
+require './player.rb'
+
+game = Game.new(Grid.new(5,5))
+game.acceptTurn(Dot.new(1,1))
+game.acceptTurn(Dot.new(1,2))
+game.acceptTurn(Dot.new(2,1))
+game.acceptTurn(Dot.new(3,2))
+game.acceptTurn(Dot.new(2,3))
+game.acceptTurn(Dot.new(3,3))
+
+game.tree
+
+STDIN.getc

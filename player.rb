@@ -2,7 +2,7 @@ class Player
 	attr_reader :name, :foreground
 	def initialize(name, color)
 		@name = name
-		@foreground = Qt::Brush.new(Qt::Color.new(color))
+		#@foreground = Qt::Brush.new(Qt::Color.new(color))
 		@turns = []
 	end
 
