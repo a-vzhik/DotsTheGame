@@ -1,9 +1,10 @@
 class Player
-	attr_reader :name, :foreground
+	attr_reader :name
 	def initialize(name, color)
 		@name = name
-		#@foreground = Qt::Brush.new(Qt::Color.new(color))
 		@turns = []
+		@foreground = nil
+		@color = color
 	end
 
 	def addTurn(turn)
@@ -11,6 +12,12 @@ class Player
 		@turns.push(turn)		
 	end
 
+  def foreground
+    if @foreground == nil then 
+      @foreground = Qt::Brush.new(Qt::Color.new(@color))     
+    end
+    @foreground
+  end
 
 	def eachTurn
 		return if !block_given?
@@ -19,5 +26,5 @@ class Player
 			yield turn
 		end
 	end
-	
+		
 end

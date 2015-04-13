@@ -32,19 +32,22 @@ class GridChrome < Qt::GraphicsItem
 
 		painter.pen = Qt::Pen.new(Qt::Brush.new(Qt::Color.new('black')), 1)
 		
-
-                for step in 1..@grid.horizontalDotsCount do
+    for step in 1..@grid.horizontalDotsCount do
 			horizontal = @gridRect.left + @horizontalGap * (step - 1)
 			painter.drawLine(horizontal, boundingRect.top, horizontal, boundingRect.bottom)
 		end
-                for step in 1..@grid.verticalDotsCount do
-                        vertical = @gridRect.top + @verticalGap * (step - 1)
+		
+		for step in 1..@grid.verticalDotsCount do
+		  vertical = @gridRect.top + @verticalGap * (step - 1)
 			painter.drawLine(boundingRect.left, vertical, boundingRect.right, vertical)
 		end
 
-		@grid.iterateDots { |dot| painter.drawEllipse(coordinate(dot), 3, 3) }
+		@grid.iterateDots do |dot| 
+		  painter.drawEllipse(coordinate(dot), 3, 3)
+		  painter.drawText(coordinate(dot), "#{dot.horizontalIndex},#{dot.verticalIndex}")
+    end
 
-		painter.brush = @game.activePlayer.foreground
+		painter.brush = @game.active_player.foreground
 		painter.drawEllipse(coordinate(@highlightedDot), 3, 3) if @highlightedDot != nil
 
 		for player in @game.players
