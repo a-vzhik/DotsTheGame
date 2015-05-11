@@ -1,7 +1,17 @@
+require './dot.rb'
+require './cut.rb'
+
 class Circuit
   attr_reader :dots
   def initialize(dots)
     @dots = dots
+    @dots_hash = Hash[@dots.map{|d| [d, true]}]
+  end
+  
+  def neighbours
+    ary = @dots.map{|dot| dot.neighbours}.flatten.map{|n| [n, true]}
+    hash = Hash[@dots.map{|dot| dot.neighbours}.flatten.map{|n| [n, true]}]
+    hash.reject{|dot, v| contains_dot? dot}.keys
   end
   
   def square
@@ -27,44 +37,44 @@ class Circuit
     (max_hi - min_hi >= 2) and (max_vi - min_vi >= 2) 
   end
   
+  def contains? (circuit)
+    circuit.dots.all? {|d| contains_dot? d or has_dot? d}
+  end
+  
+  def has_dot? (dot)
+    @dots_hash.has_key? dot
+  end
+  
   def contains_dot? (dot)
     count = 0
-    cuts = []
+    cuts = [Segment.new(@dots.last, @dots.first)]
     for i in 1...@dots.length
        next if @dots[i-1].verticalIndex == @dots[i].verticalIndex 
        if @dots[i-1].verticalIndex == dot.verticalIndex or @dots[i].verticalIndex == dot.verticalIndex then
-         cuts << [@dots[i-1], @dots[i]] #p3, p4 
+         cuts << Segment.new(@dots[i-1], @dots[i])
        end
     end   
     
+    right_ray = Segment.new(Dot.new(100, dot.verticalIndex), dot)
     for cut in cuts
-      ray_cut = [Dot.new(-1, dot.verticalIndex), dot] #p1, p2
-      
-      y4 = cut[1].verticalIndex
-      y3 = cut[0].verticalIndex
-      y2 = ray_cut[1].verticalIndex
-      y1 = ray_cut[0].verticalIndex
-      
-      x4 = cut[1].horizontalIndex
-      x3 = cut[0].horizontalIndex
-      x2 = ray_cut[1].horizontalIndex
-      x1 = ray_cut[0].horizontalIndex
-      
-      div = ((y4 - y3)*(x2 - x1) - (x4 - x3)*(y2 - y1))
-      ua = ((x4 - x3)* (y1 - y3) - (y4 - y3)*(x1 - x3)) / div
-      ub = ((x2 - x1)*(y1 - y3) - (y2 - y1)*(x1 - x3)) / div
-      
-      if ((0..1).include? ua) and ((0..1).include? ub) then
-        x = ray_cut[0].horizontalIndex + ua * (ray_cut[1].horizontalIndex - ray_cut[0].horizontalIndex)
-        y = ray_cut[0].verticalIndex + ua * (ray_cut[1].verticalIndex - ray_cut[0].horizontalIndex)
-        puts "Cuts #{cut} and #{ray_cut} intersects at (#{x}; #{y})"
-        count = count+1
-      end
-    end
-    count.odd?  
+      count = count + 1 if cut.intersects? right_ray 
+    end 
+    
+    return false if count != 2
+    
+    left_ray = Segment.new(Dot.new(-1, dot.verticalIndex), dot)
+    for cut in cuts
+      count = count + 1 if cut.intersects? left_ray
+    end     
+    count == 4
   end
-  
+ 
   def to_s
     @dots.to_s
   end
 end
+
+circ = Circuit.new([Dot.new(5,5), Dot.new(4,6), Dot.new(5,7), Dot.new(6,6)]) 
+nbrs = circ.neighbours 
+
+puts nbrs.to_s

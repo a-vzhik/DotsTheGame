@@ -11,12 +11,12 @@ class Game
 		@turn = :first
 	end
 
-	def acceptTurn (dot)
-		active_player.addTurn(PlayerTurn.new(Time.new, dot))
+	def accept_turn (dot)
+		active_player.add_turn(PlayerTurn.new(Time.new, dot))
 
     seizure = get_seizure 
 		if seizure != nil then
-		  passive_player.eachTurn do |turn|
+		  passive_player.each_turn do |turn|
 		    seizure.contains_dot? turn.dot 
 		  end
 		end
@@ -41,13 +41,14 @@ class Game
       end		
       
       if best_circuit != nil then
-        passive_player.eachTurn do |turn|
-          if best_circuit.contains_dot? turn.dot then
-            puts "Dot accuired #{turn.dot}"
+        passive_player.all_dots do |d|
+          if best_circuit.contains_dot? d then
+            puts "Dot accuired #{d}"
+            passive_player.make_dot_unavailable d
           end 
         end    
         
-        puts best_circuit
+        active_player.add_seizure best_circuit
       end
     end
 	
@@ -66,7 +67,7 @@ class Game
 		[@firstPlayer, @secondPlayer]
 	end
 
-	def build_tree(tree_node, parent_node, dots_hash, dot)
+	def build_tree(tree_node, parent_node, dots_hash, circuits, dot)
     branch = TreeBranch.new(tree_node)
     if TreeBranchPathLookup.has_path? branch then
       branch.tail_node.cut if branch.head_node.data != branch.tail_node.data
@@ -75,21 +76,22 @@ class Game
 	  
 	  new_children = []
 	  
-		for neighbour in neighbours(dot) 
-			next if !dots_hash.has_key? neighbour 
+	  neighbours = dot.neighbours.select{|d| @grid.contains? d and dots_hash.has_key? d}
+	  
+		for neighbour in neighbours 
 			next if parent_node != nil and parent_node.data == neighbour
 			
 			new_children << tree_node.add_child(neighbour)
 		end
 		
-		if new_children.empty? then
+		if new_children.empty? or neighbours.length == 1  then
       branch = TreeBranch.new(tree_node)
       if branch.head_node.data != branch.tail_node.data
         branch.tail_node.cut
       end
 		else
 		  for child_node in new_children
-        build_tree(child_node, tree_node, dots_hash, child_node.data)
+        build_tree(child_node, tree_node, dots_hash, circuits, child_node.data)
 		  end
 		end
 	end	
@@ -98,10 +100,13 @@ class Game
 	  puts "Tree for a dot: #{dot}"
 		
     dots_hash = {}
-    active_player.eachTurn {|turn| dots_hash[turn.dot] = true}
+    active_player.available_dots {|d| dots_hash[d] = true}
+    
+    seizures = []
+    active_player.each_seizure {|s| seizures << s}
 		
 		tree = Tree.new(TreeItem.new(dot))
-		build_tree(tree.root, nil, dots_hash, dot)
+		build_tree(tree.root, nil, dots_hash, seizures, dot)
 
     tree
 		#puts tree
@@ -130,7 +135,7 @@ class Game
 	
 	def pathes(allDots, startDot, currentDot, pathDots)
 		pathes = {}
-		for neighbour in neighbours(currentDot) do
+		for neighbour in currentDot.neighbours.select{|d| @grid.contains? d} do
 		  if neighbour.eql?(startDot) then
         pathes[pathDots] = pathDots if pathDots.length > 3 and Circuit.new(pathDots.keys).is_meaningful?
       end 
