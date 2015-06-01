@@ -1,31 +1,25 @@
 require 'thread'
 require 'Qt'
 
+require './qt_extensions.rb'
 require './game.rb'
 require './grid.rb'
 require './grid_chrome.rb'
+require './start_view.rb'
+require './tab_control.rb'
+require './game_view.rb'
+require './player_chrome.rb'
 
 app = Qt::Application.new(ARGV)
 
-scene =  Qt::GraphicsScene.new
-scene.setSceneRect(-300, -300, 600, 500)
-#scene.setBackgroundBrush(Qt::Brush.new(Qt::Color.new('lightgreen')))
-scene.itemIndexMethod = Qt::GraphicsScene::NoIndex
+#font_id = Qt::FontDatabase.addApplicationFont("PressStart2P.ttf")
+font_id = Qt::FontDatabase.addApplicationFont("Pixel LCD-7.ttf")
 
-grid = Grid.new(20, 20)
-game = Game.new(grid)
-gridChrome = GridChrome.new(grid, game)
+families = Qt::FontDatabase.applicationFontFamilies(font_id)
+font = Qt::Font.new(families[0])
+font.setPointSize 10
+app.setFont font
 
-scene.addItem(gridChrome)
-
-view = Qt::GraphicsView.new(scene)
-view.renderHint = Qt::Painter::Antialiasing
-#view.backgroundBrush = Qt::Brush.new(Qt::Color.new('lightgray'))
-view.cacheMode = Qt::GraphicsView::CacheBackground
-#view.dragMode = Qt::GraphicsView::ScrollHandDrag
-view.setWindowTitle(QT_TRANSLATE_NOOP(Qt::GraphicsView, "Dots The Game"))
-#view.resize(800, 600)
-view.setWindowState(Qt::WindowMaximized)
-view.show
+TabControl.new.show
 
 app.exec

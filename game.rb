@@ -6,7 +6,7 @@ require './circuit.rb'
 class Game
 	def initialize(grid)
 		@grid = grid
-		@firstPlayer = Player.new('Player 1', 'red')
+		@firstPlayer = Player.new("Player 1", 'red')
 		@secondPlayer = Player.new('Player 2', 'blue');
 		@turn = :first
 	end
@@ -41,14 +41,37 @@ class Game
       end		
       
       if best_circuit != nil then
-        passive_player.all_dots do |d|
-          if best_circuit.contains_dot? d then
-            puts "Dot accuired #{d}"
-            passive_player.make_dot_unavailable d
-          end 
-        end    
+        passive_player.reset_unavailable_dots
+        active_player.reset_unavailable_dots
+        
+        seizures_to_delete = []
+        passive_player.each_seizure {|s| seizures_to_delete << s if best_circuit.contains? s}
+        seizures_to_delete.each {|s| passive_player.delete_seizure s} 
         
         active_player.add_seizure best_circuit
+
+        captured_dots = 0
+        passive_player.all_dots do |d|
+          active_player.each_seizure do |s|
+            if s.contains_dot? d then
+              passive_player.make_dot_unavailable d
+              captured_dots = captured_dots + 1
+            end 
+          end
+        end    
+        active_player.captured_dots_count = captured_dots 
+        
+        captured_dots = 0
+        active_player.all_dots do |d|
+          passive_player.each_seizure do |s|
+            if s.contains_dot? d then
+              active_player.make_dot_unavailable d
+              captured_dots = 0
+            end 
+          end
+        end
+        passive_player.captured_dots_count = captured_dots 
+        
       end
     end
 	
@@ -75,8 +98,9 @@ class Game
     end
 	  
 	  new_children = []
-	  
-	  neighbours = dot.neighbours.select{|d| @grid.contains? d and dots_hash.has_key? d}
+
+	  dot_neighbours = dot.neighbours.select{|d| @grid.contains? d and dots_hash.has_key? d}
+	  neighbours = dot_neighbours #[]
 	  
 		for neighbour in neighbours 
 			next if parent_node != nil and parent_node.data == neighbour
@@ -100,7 +124,7 @@ class Game
 	  puts "Tree for a dot: #{dot}"
 		
     dots_hash = {}
-    active_player.available_dots {|d| dots_hash[d] = true}
+    active_player.dots_not_in_circuits {|d| dots_hash[d] = true}
     
     seizures = []
     active_player.each_seizure {|s| seizures << s}

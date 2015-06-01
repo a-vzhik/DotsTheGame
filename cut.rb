@@ -5,6 +5,14 @@ class Segment
     @end_point = end_point
   end
   
+  def is_vertical?
+    @begin_point.verticalIndex != @end_point.verticalIndex
+  end
+  
+  def same_vertical? (dot)
+    @begin_point.verticalIndex == dot.verticalIndex or @end_point.verticalIndex == dot.verticalIndex
+  end
+  
   def intersects? (another_segment)
     p1 = begin_point.to_a
     p2 = end_point.to_a
