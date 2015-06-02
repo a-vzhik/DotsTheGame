@@ -1,0 +1,17 @@
+{
+	"grid_size": [25, 25],
+	"players_settings": [
+		{
+			"player_id": 1,
+			"dot_stroke": "#AA7C5440", 
+			"dot_fill": "#AEF0A1",
+			"capture_fill": "#66AEF0A1"
+		},
+		{
+			"player_id": 2, 
+			"dot_stroke": "#AAAB745C", 
+			"dot_fill": "#FFAB745C",
+			"capture_fill": "#66AB745C"
+		}
+	]
+}
