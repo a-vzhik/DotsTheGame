@@ -21,7 +21,8 @@ class PlayerChrome < Qt::Widget
     player_name_frame = actual_player_name_rect.adjusted(-padding, -padding, padding, padding)
 
     if @player.is_active then
-      painter.fillRect(player_name_frame, @player.settings.capture_fill)
+      #painter.fillRect(player_name_frame, @player.settings.capture_fill)
+      painter.drawRect(@player.settings.capture_fill, nil, player_name_frame)
     end
 
     painter.drawText(actual_player_name_rect, flags, "#{@player.name}")

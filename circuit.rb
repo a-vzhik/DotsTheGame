@@ -1,5 +1,5 @@
-require './dot.rb'
-require './cut.rb'
+require_relative './dot.rb'
+require_relative './cut.rb'
 
 class Circuit
   attr_reader :dots

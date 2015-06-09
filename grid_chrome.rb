@@ -31,7 +31,7 @@ class GridChrome < Qt::Widget
     #painter.pen = Qt::Pen.new(Qt::Brush.new(Qt::Color.new('blue')), 2)
     painter.brush = Qt::Brush.new(@background_color)
     #painter.drawRect(boundingRect)
-
+    #painter.setRenderHints 1
     painter.pen = Qt::Pen.new(Qt::Brush.new(Qt::Color.fromString('#DDD')), 1)
 
     for step in 1..@grid.horizontalDotsCount do
@@ -45,20 +45,24 @@ class GridChrome < Qt::Widget
     end
 
     painter.brush = Qt::Brush.new(Qt::Color.fromString('#AADDDDDD'))
-    painter.pen = nil
+    painter.pen = Qt::Pen.new(Qt::Brush.new(Qt::Color.fromString('#66DDDDDD')), 1)
 
+    path = Qt::PainterPath.new
     @grid.iterateDots do |dot|
-      paint_dot painter, dot, false if is_dot_available? dot
+      path.addEllipse(coordinateF(dot), @dot_radius, @dot_radius) if is_dot_available? dot
     end
 
+    painter.drawPath(path)
+
+    painter.pen = nil
     for player in @game.players
       painter.brush = player.settings.dot_fill
       player.unavailable_dots {|dot| paint_dot painter, dot, true}
     end
 
     for player in @game.players
-
       painter.brush = player.settings.capture_fill
+      painter.pen = Qt::Pen.new(Qt::Brush.new(Qt::Color.fromString('#66DDDDDD')), 1)
       player.each_seizure do |s|
         points = Qt::Polygon.new(s.dots.map{|d| coordinate(d)})
         painter.drawPolygon(points)
@@ -66,12 +70,22 @@ class GridChrome < Qt::Widget
     end
 
     for player in @game.players
+      path = Qt::PainterPath.new
       painter.brush = player.settings.dot_fill
-      player.available_dots {|dot| paint_dot painter, dot, false}
+      painter.pen = Qt::Pen.new(player.settings.capture_fill, 1)
+      player.available_dots {|dot| path.addEllipse(coordinateF(dot), @dot_radius, @dot_radius)}
+      #painter.fillPath(path, player.settings.dot_fill)
+      painter.drawPath(path)
     end
 
-    painter.brush = @game.active_player.settings.dot_fill
-    paint_dot painter, @highlighted_dot, false if @highlighted_dot != nil
+    if @highlighted_dot !=nil then
+      painter.brush = @game.active_player.settings.dot_fill
+      painter.pen = Qt::Pen.new(@game.active_player.settings.capture_fill, 1)
+      path = Qt::PainterPath.new
+      path.addEllipse(coordinateF(@highlighted_dot), @dot_radius, @dot_radius)
+      painter.drawPath(path)
+    end
+    #paint_dot(painter, @highlighted_dot, false) if @highlighted_dot != nil
 
   end
 
@@ -108,6 +122,11 @@ class GridChrome < Qt::Widget
         @grid_rect.left + @horizontal_gap * dot.horizontalIndex,
         @grid_rect.top + @vertical_gap * dot.verticalIndex)
   end
+  def coordinateF(dot)
+    Qt::PointF.new(
+        @grid_rect.left + @horizontal_gap * dot.horizontalIndex,
+        @grid_rect.top + @vertical_gap * dot.verticalIndex)
+  end
 
   def square(dot)
     coord = coordinate dot
@@ -115,6 +134,11 @@ class GridChrome < Qt::Widget
   end
 
   def mouseMoveEvent(event)
+    if !mouseTracking then
+      event.ignore
+      return
+    end
+
     old_highlighted_dot = @highlighted_dot
 
     possible_row = ((event.pos().x - @grid_rect.left) / @horizontal_gap).round
@@ -131,7 +155,7 @@ class GridChrome < Qt::Widget
   end
 
   def mousePressEvent(event)
-    if event.button != Qt::LeftButton
+    if event.button != Qt::LeftButton || !mouseTracking then
       event.ignore
       return
     end
@@ -170,10 +194,10 @@ class GridChrome < Qt::Widget
         boundingRect.width - 2*@margin,
         boundingRect.height - 2*@margin)
 
-    @horizontal_gap = @grid_rect.width / (@grid.horizontalDotsCount - 1)
-    @vertical_gap = @grid_rect.height / (@grid.verticalDotsCount - 1)
+    @horizontal_gap = (@grid_rect.width / (@grid.horizontalDotsCount - 1)).round
+    @vertical_gap = (@grid_rect.height / (@grid.verticalDotsCount - 1)).round
 
-    @dot_radius = @horizontal_gap / 7
+    @dot_radius = (@horizontal_gap / 7).round
 
     puts "setBoundingRect #{@bounding_rect}"
     repaint(boundingRect.left, boundingRect.top, boundingRect.width, boundingRect.height)

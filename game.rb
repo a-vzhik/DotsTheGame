@@ -1,13 +1,12 @@
-require './player.rb'
-require './player_turn.rb'
-require './tree.rb'
-require './circuit.rb'
+require_relative './player.rb'
+require_relative './player_turn.rb'
+require_relative './tree.rb'
+require_relative './circuit.rb'
 
 class Game
-  def initialize(grid)
+  def initialize(grid, first_player, second_player)
     @grid = grid
-    @firstPlayer = Player.new('Player 1', PlayerSettings.new(1, 'settings.json'))
-    @secondPlayer = Player.new('Player 2', PlayerSettings.new(2, 'settings.json'));
+    @firstPlayer, @secondPlayer = first_player, second_player
     set_turn :first
   end
 
@@ -19,13 +18,6 @@ class Game
 
   def accept_turn (dot)
     active_player.add_turn(PlayerTurn.new(Time.new, dot))
-
-    seizure = get_seizure
-    if seizure != nil then
-      passive_player.each_turn do |turn|
-        seizure.contains_dot? turn.dot
-      end
-    end
 
     tree = tree_from_dot dot
 
@@ -56,27 +48,27 @@ class Game
 
         active_player.add_seizure best_circuit
 
-        captured_dots = 0
+        captured_dots = {}
         passive_player.all_dots do |d|
           active_player.each_seizure do |s|
             if s.contains_dot? d then
               passive_player.make_dot_unavailable d
-              captured_dots = captured_dots + 1
+              captured_dots[d] = d
             end
           end
         end
-        active_player.score = captured_dots
+        active_player.score = captured_dots.count
 
-        captured_dots = 0
+        captured_dots = {}
         active_player.all_dots do |d|
           passive_player.each_seizure do |s|
             if s.contains_dot? d then
               active_player.make_dot_unavailable d
-              captured_dots = captured_dots + 1
+              captured_dots[d] = d
             end
           end
         end
-        passive_player.score = captured_dots
+        passive_player.score = captured_dots.count
 
       end
     end
@@ -140,46 +132,6 @@ class Game
 
     tree
     #puts tree
-  end
-
-  def get_seizure
-    return nil
-
-    dotsHash = {}
-    dotsArray = []
-    active_player.eachTurn {|turn| dotsArray.push turn.dot}
-    dotsArray.each {|dot| dotsHash[dot] = true}
-    dot = dotsArray[dotsArray.length-1]
-    puts "Start point #{dot}"
-    pathes = pathes(dotsHash, dot, dot, {dot => dot})
-    if pathes.length > 0 then
-      puts "Pathes Found: #{pathes.length}"
-
-      best_circuit = pathes.keys.map{|p| Circuit.new(p.keys)}.max_by {|c| c.square}
-      puts "Square is #{best_circuit.square} for the best path #{best_circuit.dots}"
-
-      return best_circuit
-    end
-    nil
-  end
-
-  def pathes(allDots, startDot, currentDot, pathDots)
-    pathes = {}
-    for neighbour in currentDot.neighbours.select{|d| @grid.contains? d} do
-      if neighbour.eql?(startDot) then
-        pathes[pathDots] = pathDots if pathDots.length > 3 and Circuit.new(pathDots.keys).is_meaningful?
-      end
-
-      next if pathDots.has_key? neighbour
-
-      if allDots.has_key? neighbour then
-        newPath = pathDots.clone
-        newPath[neighbour] = neighbour
-
-        pathes(allDots, startDot, neighbour, newPath).each_key {|p| pathes[p] = p if p.length > 3}
-      end
-    end
-    pathes
   end
 
   def neighbours(dot)

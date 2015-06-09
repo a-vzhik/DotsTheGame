@@ -1,4 +1,4 @@
-require './dot.rb'
+require_relative './dot.rb'
 
 class Grid
   attr_reader :horizontalDotsCount, :verticalDotsCount

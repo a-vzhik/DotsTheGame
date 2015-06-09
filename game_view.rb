@@ -1,10 +1,8 @@
 class GameView < Qt::Widget
-  def initialize (parent)
+  def initialize (controller, parent = nil)
     super parent
 
-    @model = HotSeatGameModel.new
-    @grid_chrome = GridChrome.new(self, @model)
-    @controller = HotSeatGameController.new(@model, @grid_chrome)
+    @controller = controller
     @controller.on_game_state_changed do
       repaint 0, 0, width, height
     end
@@ -15,9 +13,9 @@ class GameView < Qt::Widget
 
 
     main_layout = Qt::GridLayout.new do |l|
-      l.addWidget(PlayerChrome.new(@model.game, @model.game.players.first, self), 0, 0)
-      l.addWidget(@grid_chrome, 0, 1, 1, 3)
-      l.addWidget(PlayerChrome.new(@model.game, @model.game.players.last, self), 0, 4)
+      l.addWidget(PlayerChrome.new(@controller.model.game, @controller.model.game.players.first, self), 0, 0)
+      l.addWidget(@controller.view, 0, 1, 1, 3)
+      l.addWidget(PlayerChrome.new(@controller.model.game, @controller.model.game.players.last, self), 0, 4)
     end
     setLayout main_layout
   end
