@@ -2,6 +2,14 @@ class Qt::RectF
   def to_s
     "#{super} (#{left}, #{top}, #{width}, #{height})"
   end
+
+  def adjusted(*params)
+    if params.length == 1 then
+      super(params[0], params[0], -params[0], -params[0])
+    else
+      super
+    end
+  end
 end
 
 class Qt::Rect
@@ -23,6 +31,10 @@ class Qt::Point
 end
 
 class Qt::Color
+  def makeTransparent
+    Qt::Color.new(red, green, blue, 0)
+  end
+
   def self.fromString(str)
     data = /\#(\h\h)(\h\h)(\h\h)(\h\h)/.match(str)
     if data != nil then
@@ -35,22 +47,60 @@ end
 
 class Qt::Painter
 	def drawRect (*params)
-    if params.length == 3 and (params[0].class == Qt::Brush or params[0].class == NilClass) and (params[1].class == Qt::Pen or params[1].class == NilClass) and (params[2].class == Qt::Rect or params[2].class == Qt::RectF)
-      brush = params[0]
-      pen = params[1]
-      rect = params[2]
-      fillRect(rect, brush) if brush != nil
-      params = [rect]
-      executeWithPen(pen) {super} if pen != nil
+    if params.length == 3 and isBrushOrNil(params[0]) and isPenOrNil(params[1]) and isRect(params[2]) then
+      executeWithBrushAndPen(params[0], params[1]) {super(params[2])}
     else
       super
     end
   end
 
-  private
+  def drawPolygon (*params)
+    if params.length == 3 and isBrushOrNil(params[0]) and isPenOrNil(params[1]) and isPolygon(params[2]) then
+      executeWithBrushAndPen(params[0], params[1]) {super(params[2])}
+    else
+      super
+    end
+  end
+
+  def drawPath (*params)
+    if params.length == 3 and isBrushOrNil(params[0]) and isPenOrNil(params[1]) and isPath(params[2]) then
+      executeWithBrushAndPen(params[0], params[1]) {super(params[2])}
+    else
+      super
+    end
+  end
+
   def executeWithPen(pen, &block)
     old_pen, self.pen = self.pen, pen
     block.call
     self.pen = old_pen
   end
+
+  def executeWithBrushAndPen(brush, pen, &block)
+    old_brush, old_pen, self.brush, self.pen = self.brush, self.pen, brush, pen
+    block.call
+    self.brush, self.pen, = old_brush, old_pen
+  end
+
+  def isBrushOrNil (param)
+    param.class == Qt::Brush or param.class == NilClass
+  end
+
+  def isPenOrNil (param)
+    param.class == Qt::Pen or param.class == NilClass
+  end
+
+  def isRect (param)
+    param.class == Qt::Rect or param.class == Qt::RectF
+  end
+
+  def isPolygon (param)
+    param.class == Qt::Polygon or param.class == Qt::PolygonF
+  end
+
+  def isPath (param)
+    param.class == Qt::PainterPath
+  end
+
+  private :executeWithPen, :executeWithBrushAndPen, :isPolygon, :isPenOrNil, :isBrushOrNil, :isRect, :isPath
 end

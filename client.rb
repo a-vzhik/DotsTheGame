@@ -1,6 +1,7 @@
-require "socket"
 class Client
+
   attr_reader :server
+
   def initialize( server )
     @turn_accepted_listeners = []
     @new_game_listeners = []
@@ -8,9 +9,6 @@ class Client
     @request = nil
     @response = nil
     listen
-    #send
-    #@request.join
-    #@response.join
   end
  
   def listen

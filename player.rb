@@ -6,7 +6,7 @@ class Player
     @settings = settings
     @turns = []
     @foreground = nil
-    @unavailable_dots = {}
+    @unavailable_dots = DotCollection.new
     @dots_inside_circuits = {}
 
     @seizures = []
@@ -14,7 +14,6 @@ class Player
   end
 
   def add_turn(turn)
-    puts turn
     @turns.push(turn)
   end
 
@@ -41,7 +40,8 @@ class Player
   end
 
   def unavailable_dots
-    each_turn{|t| yield t.dot if !is_available t.dot} if block_given?
+    #each_turn{|t| yield t.dot if !is_available t.dot} if block_given?
+    @unavailable_dots
   end
 
   def dots_not_in_circuits
@@ -54,19 +54,15 @@ class Player
   end
 
   def is_available (dot)
-    !@unavailable_dots.has_key? dot
+    !@unavailable_dots.contains? dot
   end
 
   def make_dot_unavailable (dot)
-    @unavailable_dots[dot] = dot
-  end
-
-  def unavailable_dot_count
-    @unavailable_dots.count;
+    @unavailable_dots.add (dot)
   end
 
   def reset_unavailable_dots
-    @unavailable_dots = {}
+    @unavailable_dots = DotCollection.new
   end
 
   def add_seizure (seizure)

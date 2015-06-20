@@ -52,9 +52,7 @@ class LocalNetworkGameStartView < Qt::Widget
       @message_label.setMaximumWidth text_edit_width
       @message_label.setWordWrap true
       l.addWidget(@message_label)
-
     end
-
 
     grid_layout = Qt::GridLayout.new do |l|
       l.setAlignment Qt::AlignVCenter
@@ -63,7 +61,7 @@ class LocalNetworkGameStartView < Qt::Widget
       l.addWidget(Qt::Widget.new, 0, 2)
     end
 
-    setLayout grid_layout
+     setLayout grid_layout
   end
 
   def try_create_server (ip, port, &block)
@@ -97,10 +95,10 @@ class LocalNetworkGameStartView < Qt::Widget
           begin
             game = {:message_type => 'new_game', :game => { :players => [first_player_name, second_player_name]}}
             @server.send_new_game game
-              model = HotSeatGameModel.new(first_player_name, second_player_name)
-              grid_chrome = GridChrome.new(self, model)
-              controller = SocketGameController.new(@server, model, grid_chrome)
-              notify_game_created controller
+            model = HotSeatGameModel.new(first_player_name, second_player_name)
+            view = HotSeatGameView.new(parent, model)
+            SocketGameController.new(@server, model, view)
+            notify_game_created view
           rescue Exception => e
             handle_error e.inspect
           end
@@ -124,9 +122,9 @@ class LocalNetworkGameStartView < Qt::Widget
       @client.on_new_game do |game|
         Qt.execute_in_main_thread do
           model = HotSeatGameModel.new game[:players][0], game[:players][1]
-          grid_chrome = GridChrome.new(self, model)
-          controller = SocketGameController.new(@client, model, grid_chrome)
-          notify_game_created controller
+          view = HotSeatGameView.new(parent, model)
+          SocketGameController.new(@client, model, view)
+          notify_game_created view
         end
       end
 
@@ -144,4 +142,6 @@ class LocalNetworkGameStartView < Qt::Widget
   def notify_game_created (controller)
     @game_created_listener.call controller if @game_created_listener
   end
+
+  private :notify_game_created, :try_create_server, :run_as_server, :run_as_client, :handle_error
 end

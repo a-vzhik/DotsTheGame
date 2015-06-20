@@ -1,33 +1,25 @@
 require_relative './dot.rb'
-require_relative './cut.rb'
+require_relative './segment.rb'
 
 class Circuit
+
   attr_reader :dots
+
   def initialize(dots)
-    @dots = dots
-    @dots_hash = Hash[@dots.map{|d| [d, true]}]
+    @dots = DotCollection.new (dots)
   end
 
   def self.load (str)
-    points = str.split('),')
-    dots = []
-    for pt in points
-      md = pt.match(/(\d+), (\d+)/)
-
-      dots << Dot.new(md[1].to_i, md[2].to_i)
+    dots = str.split('),').map do |point_str|
+      match_data = point_str.match(/(\d+), (\d+)/)
+      Dot.new(match_data[1].to_i, match_data[2].to_i)
     end
 
     Circuit.new(dots)
   end
 
-  def neighbours
-    ary = @dots.map{|dot| dot.neighbours}.flatten.map{|n| [n, true]}
-    hash = Hash[@dots.map{|dot| dot.neighbours}.flatten.map{|n| [n, true]}]
-    hash.reject{|dot, v| contains_dot? dot}.keys
-  end
-
   def square
-    firstSum,secondSum = 0,0
+    firstSum, secondSum = 0.0, 0.0
     lastIndex = @dots.length-1
     for i in 1..lastIndex
       firstSum += @dots[i-1].horizontalIndex * @dots[i].verticalIndex
@@ -51,47 +43,34 @@ class Circuit
 
   def contains? (circuit)
     circuit.dots.all? do |d|
-      puts "#{d}: #{contains_dot? d} or #{has_dot? d}"
       contains_dot? d or has_dot? d
     end
   end
 
   def has_dot? (dot)
-    @dots_hash.has_key? dot
+    @dots.contains? dot
   end
 
   def contains_dot? (dot)
     return false if has_dot? dot
 
-    count = 0
-    cuts = [Segment.new(@dots.last, @dots.first)]
-    for i in 1...@dots.length
-      cuts << Segment.new(@dots[i-1], @dots[i])
-    end
-
-    cuts.select! do |cut|
-      cut.is_vertical? and cut.same_vertical? dot
-    end
+    cuts = (0...@dots.length)
+      .map {|i| Segment.new(@dots[i-1], @dots[i])}
+      .select {|cut| cut.is_vertical? and cut.same_vertical? dot}
 
     return false if cuts.length < 4
 
-    cut_pairs = []
-    prev_cut = cuts.last
-    for cut in cuts
-      cut_pairs << [prev_cut, cut]
-      prev_cut = cut
-    end
-
+    cut_pairs = (0...cuts.length).map {|i| [cuts[i-1], cuts[i]]}
     left_ray = Segment.new(Dot.new(-1, dot.verticalIndex), dot)
-    for cut_pair in cut_pairs
-      first_cut_intersects = cut_pair[0].intersects? left_ray
-      second_cut_intersects = cut_pair[1].intersects? left_ray
-      acute_angle = cut_pair[0].begin_point.verticalIndex == cut_pair[1].end_point.verticalIndex
+    cut_pairs.select{|pair| ray_intersects_two_segments?(left_ray, pair[0], pair[1])}.count.odd?
+  end
 
-      count = count + 1 if first_cut_intersects and second_cut_intersects and !acute_angle
-    end
+  def ray_intersects_two_segments? (ray, first_segment, second_segment)
+    first_cut_intersects = first_segment.intersects? ray
+    second_cut_intersects = second_segment.intersects? ray
+    acute_angle = first_segment.begin_point.verticalIndex == second_segment.end_point.verticalIndex
 
-    count.odd?
+    first_cut_intersects and second_cut_intersects and !acute_angle
   end
 
   def to_s
@@ -115,7 +94,7 @@ puts c1.contains? c2
 
 =end
 
-c1 = Circuit.load('(3, 10), (4, 11), (5, 12), (6, 12), (6, 11), (7, 10), (8, 10), (9, 9), (9, 8), (9, 7), (8, 6), (7, 7), (6, 8), (5, 9), (4, 10), (3, 9), (3, 8), (2, 7), (1, 8), (1, 9), (2, 10)')
-c2 = Circuit.load('(9, 10), (9, 9), (9, 8), (9, 7), (8, 6), (7, 7), (6, 8), (5, 9), (4, 10), (3, 9), (3, 8), (2, 7), (1, 8), (1, 9), (2, 10), (3, 10), (4, 11), (5, 12), (6, 11), (7, 10), (8, 10)')
+#c1 = Circuit.load('(3, 10), (4, 11), (5, 12), (6, 12), (6, 11), (7, 10), (8, 10), (9, 9), (9, 8), (9, 7), (8, 6), (7, 7), (6, 8), (5, 9), (4, 10), (3, 9), (3, 8), (2, 7), (1, 8), (1, 9), (2, 10)')
+#c2 = Circuit.load('(9, 10), (9, 9), (9, 8), (9, 7), (8, 6), (7, 7), (6, 8), (5, 9), (4, 10), (3, 9), (3, 8), (2, 7), (1, 8), (1, 9), (2, 10), (3, 10), (4, 11), (5, 12), (6, 11), (7, 10), (8, 10)')
 
-puts c2.contains? c1
+#puts c2.contains? c1

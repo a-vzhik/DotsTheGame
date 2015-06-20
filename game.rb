@@ -1,8 +1,3 @@
-require_relative './player.rb'
-require_relative './player_turn.rb'
-require_relative './tree.rb'
-require_relative './circuit.rb'
-
 class Game
   def initialize(grid, first_player, second_player)
     @grid = grid
@@ -10,7 +5,7 @@ class Game
     set_turn :first
   end
 
-  def set_turn turn
+  def set_turn(turn)
     @firstPlayer.is_active = turn == :first
     @secondPlayer.is_active = turn != :first
     @turn = turn
@@ -18,6 +13,7 @@ class Game
 
   def accept_turn (dot)
     active_player.add_turn(PlayerTurn.new(Time.new, dot))
+    @grid.delete_empty_dot(dot)
 
     tree = tree_from_dot dot
 
@@ -73,7 +69,7 @@ class Game
       end
     end
 
-    set_turn @turn == :first ? :second : :first
+    set_turn(@turn == :first ? :second : :first)
   end
 
   def active_player

@@ -1,4 +1,3 @@
-require "socket"
 class Server
   def initialize(ip, port)
     @candidates_changed_listeners = []
@@ -27,7 +26,7 @@ class Server
     }
   end
 
-  def listen_user_messages(client )
+  def listen_user_messages (client)
     Thread.start do
       loop {
         msg = client.gets.chomp

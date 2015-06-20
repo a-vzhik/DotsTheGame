@@ -4,8 +4,8 @@
 		{
 			"player_id": 1,
 			"dot_stroke": "#AA7C5440", 
-			"dot_fill": "#AEF0A1",
-			"capture_fill": "#66AEF0A1"
+			"dot_fill": "#63B2F2",
+			"capture_fill": "#6663B2F2"
 		},
 		{
 			"player_id": 2, 
