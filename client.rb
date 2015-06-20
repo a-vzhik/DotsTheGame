@@ -19,9 +19,9 @@ class Client
 
         case json[:message_type]
           when 'new_game'
-            notify_new_game (json[:game])
+            notify_new_game json[:game]
           when 'turn'
-            notify_turn_accepted  (Dot.new(json[:turn][0], json[:turn][1]))
+            notify_turn_accepted  Dot.new(json[:turn][0], json[:turn][1])
         end
       }
     end

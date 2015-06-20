@@ -9,7 +9,7 @@ class LocalNetworkGameStartView < Qt::Widget
       text_edit_width = 350
       padding = 10
 
-      label = Qt::Label.new ('Enter a player name:')
+      label = Qt::Label.new('Enter a player name:')
       l.addWidget(label)
 
       @player_name_text_edit = Qt::LineEdit.new(settings[:player_name])
@@ -18,7 +18,7 @@ class LocalNetworkGameStartView < Qt::Widget
 
       l.addSpacerItem(Qt::SpacerItem.new(1,padding))
 
-      label = Qt::Label.new ('Enter an IP address:')
+      label = Qt::Label.new('Enter an IP address:')
       l.addWidget(label)
 
       @ip_text_edit = Qt::LineEdit.new(settings[:ip])
@@ -28,7 +28,7 @@ class LocalNetworkGameStartView < Qt::Widget
 
       l.addSpacerItem(Qt::SpacerItem.new(1,padding))
 
-      label = Qt::Label.new ('Enter a port:')
+      label = Qt::Label.new('Enter a port:')
       l.addWidget(label)
 
       @port_text_edit = Qt::LineEdit.new()

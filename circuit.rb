@@ -6,7 +6,7 @@ class Circuit
   attr_reader :dots
 
   def initialize(dots)
-    @dots = DotCollection.new (dots)
+    @dots = DotCollection.new(dots)
   end
 
   def self.load (str)

@@ -173,7 +173,7 @@ class GridChrome < Qt::Widget
     else
       highlighted_dot = @highlighted_dot
       @highlighted_dot = nil
-      notify_dot_selected (highlighted_dot) if highlighted_dot != nil and @grid.empty_dots.contains? highlighted_dot
+      notify_dot_selected(highlighted_dot) if highlighted_dot != nil and @grid.empty_dots.contains? highlighted_dot
     end
   end
 
@@ -182,7 +182,7 @@ class GridChrome < Qt::Widget
   end
 
   def notify_dot_selected (dot)
-    @dot_selected_listeners.each{|l| l.call (dot)}
+    @dot_selected_listeners.each{|l| l.call dot}
   end
 
   private :notify_dot_selected

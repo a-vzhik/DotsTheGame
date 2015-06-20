@@ -5,7 +5,7 @@ class Grid
     @horizontalDotsCount, @verticalDotsCount = horizontalDotsCount, verticalDotsCount
 
     @empty_dots = DotCollection.new
-    iterate_dots {|d| @empty_dots.add (d)}
+    iterate_dots {|d| @empty_dots.add(d)}
   end
 
   def delete_empty_dot(dot)

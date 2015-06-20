@@ -26,9 +26,9 @@ class Player
   end
 
   def all_dots
-    enum = each_turn.map{|t| t.dot}
+    enum = each_turn.map {|t| t.dot}
     if block_given? then
-      enum.each{|dot| yield dot }
+      enum.each {|dot| yield dot }
     else
       enum
     end
@@ -58,7 +58,7 @@ class Player
   end
 
   def make_dot_unavailable (dot)
-    @unavailable_dots.add (dot)
+    @unavailable_dots.add dot
   end
 
   def reset_unavailable_dots
