@@ -3,35 +3,37 @@ class LocalNetworkGameStartView < Qt::Widget
   def initialize(parent = nil)
     super(parent)
 
+    settings = load
+
     stack_layout = Qt::VBoxLayout.new do |l|
       text_edit_width = 350
       padding = 10
 
-      label = Qt::Label.new ("Enter a player name:")
+      label = Qt::Label.new ('Enter a player name:')
       l.addWidget(label)
 
-      @player_name_text_edit = Qt::LineEdit.new('Player 1')
+      @player_name_text_edit = Qt::LineEdit.new(settings[:player_name])
       @player_name_text_edit.setMaximumWidth text_edit_width
       l.addWidget(@player_name_text_edit)
 
       l.addSpacerItem(Qt::SpacerItem.new(1,padding))
 
-      label = Qt::Label.new ("Enter an IP address:")
+      label = Qt::Label.new ('Enter an IP address:')
       l.addWidget(label)
 
-      @ip_text_edit = Qt::LineEdit.new('127.0.0.1')
+      @ip_text_edit = Qt::LineEdit.new(settings[:ip])
       @ip_text_edit.setInputMask('000.000.000.000')
       @ip_text_edit.setMaximumWidth text_edit_width
       l.addWidget(@ip_text_edit)
 
       l.addSpacerItem(Qt::SpacerItem.new(1,padding))
 
-      label = Qt::Label.new ("Enter a port:")
+      label = Qt::Label.new ('Enter a port:')
       l.addWidget(label)
 
       @port_text_edit = Qt::LineEdit.new()
       @port_text_edit.setInputMask '00000'
-      @port_text_edit.setText '5555'
+      @port_text_edit.setText settings[:port]
       @port_text_edit.setMaximumWidth text_edit_width
       l.addWidget(@port_text_edit)
 
@@ -85,6 +87,8 @@ class LocalNetworkGameStartView < Qt::Widget
       return
     end
 
+    save network_settings
+
     try_create_server(@ip_text_edit.text, port) do |srv|
       @server = srv
       @server_button.setDisabled true
@@ -115,6 +119,8 @@ class LocalNetworkGameStartView < Qt::Widget
       return
     end
 
+    save network_settings
+
     begin
       server = TCPSocket.open(@ip_text_edit.text, port)
       @client = Client.new(server)
@@ -134,7 +140,7 @@ class LocalNetworkGameStartView < Qt::Widget
       handle_error e.inspect
     end
   end
-
+  
   def on_game_created (&block)
     @game_created_listener = block if block
   end
@@ -143,5 +149,27 @@ class LocalNetworkGameStartView < Qt::Widget
     @game_created_listener.call controller if @game_created_listener
   end
 
-  private :notify_game_created, :try_create_server, :run_as_server, :run_as_client, :handle_error
+  def save (settings)
+    begin
+      File.write('network.json', JSON.generate(settings))
+    rescue Exception => ex
+      puts ex.inspect
+    end  
+  end
+  
+  def load 
+    begin
+      JSON.parse(File.read('network.json'), {:symbolize_names => true})
+    rescue Exception => ex
+      puts ex.inspect
+      {:player_name => 'Player 1', :ip => '127.0.0.1', :port => '5555'}
+    end
+  end
+  
+  def network_settings
+    {:player_name => @player_name_text_edit.text, :ip => @ip_text_edit.text, :port => @port_text_edit.text}    
+  end
+
+  private :notify_game_created, :try_create_server, :run_as_server, 
+          :run_as_client, :handle_error, :save, :load, :network_settings 
 end
