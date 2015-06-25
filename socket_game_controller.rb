@@ -8,7 +8,7 @@ class SocketGameController
     @mouse_layer = game_view.mouse_layer
 
     if server_or_client.class == Client
-      @game_view.setMouseTracking false
+      @mouse_layer.setMouseTracking false
     end
 
     @mouse_layer.on_dot_selected do |dot|
