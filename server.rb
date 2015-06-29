@@ -18,12 +18,12 @@ class Server
   end
 
   def run
-    loop {
+    #loop {
       Thread.start(@server.accept) do | client |
         message = client.gets.chomp
         process_user_message message, {:client => client}
       end
-    }
+    #}
   end
 
   def listen_user_messages (client)

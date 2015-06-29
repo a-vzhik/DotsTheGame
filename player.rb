@@ -32,7 +32,6 @@ class Player
     else
       enum
     end
-
   end
 
   def available_dots

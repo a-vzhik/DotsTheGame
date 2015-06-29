@@ -10,13 +10,13 @@ class Tree
   end
 
   def each_branch (&block)
-    iterate_branches (@root) { |b| block.call b }
+    iterate_branches(@root) { |b| block.call b }
   end
 
   def iterate_branches (node, &block)
     if node.has_children? then
       for child in node.children
-        iterate_branches (child) {|b| block.call b}
+        iterate_branches(child) {|b| block.call b}
       end
     else
       block.call TreeBranch.new(node)

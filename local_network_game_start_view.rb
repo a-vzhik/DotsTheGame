@@ -16,15 +16,22 @@ class LocalNetworkGameStartView < Qt::Widget
       @player_name_text_edit.setMaximumWidth text_edit_width
       l.addWidget(@player_name_text_edit)
 
-      l.addSpacerItem(Qt::SpacerItem.new(1,padding))
+      l.addSpacerItem(Qt::SpacerItem.new(1,padding*3))
 
       label = Qt::Label.new('Enter an IP address:')
       l.addWidget(label)
 
-      @ip_text_edit = Qt::LineEdit.new(settings[:ip])
-      @ip_text_edit.setInputMask('000.000.000.000')
-      @ip_text_edit.setMaximumWidth text_edit_width
-      l.addWidget(@ip_text_edit)
+      @network_interfaces_combo_box = Qt::ComboBox.new
+      ip_index = 0
+      Socket.ip_address_list.each do |i|
+        if i.ipv4?
+          @network_interfaces_combo_box.addItem(i.ip_address)
+          ip_index = @network_interfaces_combo_box.count - 1 if i.ip_address == settings[:server_ip] 
+        end  
+      end  
+      @network_interfaces_combo_box.setCurrentIndex ip_index if @network_interfaces_combo_box.count > 0
+      @network_interfaces_combo_box.setMaximumWidth text_edit_width
+      l.addWidget(@network_interfaces_combo_box)
 
       l.addSpacerItem(Qt::SpacerItem.new(1,padding))
 
@@ -33,19 +40,40 @@ class LocalNetworkGameStartView < Qt::Widget
 
       @port_text_edit = Qt::LineEdit.new()
       @port_text_edit.setInputMask '00000'
-      @port_text_edit.setText settings[:port]
+      @port_text_edit.setText settings[:server_port]
       @port_text_edit.setMaximumWidth text_edit_width
       l.addWidget(@port_text_edit)
 
       l.addSpacerItem(Qt::SpacerItem.new(1,padding))
 
-      @server_button = Qt::PushButton.new('Run a new game')
+      @server_button = Qt::PushButton.new('Create a new game')
       connect(@server_button, SIGNAL('clicked()'), self, SLOT('run_as_server()'))
       l.addWidget(@server_button)
 
+      l.addSpacerItem(Qt::SpacerItem.new(1,padding*3))
+      
+      label = Qt::Label.new('Enter an IP address:')
+      l.addWidget(label)
+
+      @ip_text_edit = Qt::LineEdit.new(settings[:client_ip])
+      @ip_text_edit.setInputMask('000.000.000.000')
+      @ip_text_edit.setMaximumWidth text_edit_width
+      l.addWidget(@ip_text_edit)
+      
       l.addSpacerItem(Qt::SpacerItem.new(1,padding))
 
-      @client_button = Qt::PushButton.new('Connect to a game')
+      label = Qt::Label.new('Enter a port:')
+      l.addWidget(label)
+
+      @port_text_edit2 = Qt::LineEdit.new()
+      @port_text_edit2.setInputMask '00000'
+      @port_text_edit2.setText settings[:client_port]
+      @port_text_edit2.setMaximumWidth text_edit_width
+      l.addWidget(@port_text_edit2)
+
+      l.addSpacerItem(Qt::SpacerItem.new(1,padding))
+
+      @client_button = Qt::PushButton.new('Join to a game')
       connect(@client_button, SIGNAL('clicked()'), self, SLOT('run_as_client()'))
       l.addWidget(@client_button)
 
@@ -89,7 +117,7 @@ class LocalNetworkGameStartView < Qt::Widget
 
     save network_settings
 
-    try_create_server(@ip_text_edit.text, port) do |srv|
+    try_create_server(@network_interfaces_combo_box.itemText(@network_interfaces_combo_box.currentIndex), port) do |srv|
       @server = srv
       @server_button.setDisabled true
       @server.on_candidates_changed do |s|
@@ -113,7 +141,7 @@ class LocalNetworkGameStartView < Qt::Widget
   end
 
   def run_as_client
-    port = @port_text_edit.text.to_i
+    port = @port_text_edit2.text.to_i
     if(port == 0 || port > 65535)
       @message_label.text = 'Invalid port. Please pick up a value between 0 and 65535'
       return
@@ -162,12 +190,24 @@ class LocalNetworkGameStartView < Qt::Widget
       JSON.parse(File.read('network.json'), {:symbolize_names => true})
     rescue Exception => ex
       puts ex.inspect
-      {:player_name => 'Player 1', :ip => '127.0.0.1', :port => '5555'}
+      {
+        :player_name => 'Player 1', 
+        :server_ip => '127.0.0.1', 
+        :server_port => '5555', 
+        :client_ip => '127.0.0.1', 
+        :client_port => '5555'
+      }
     end
   end
   
   def network_settings
-    {:player_name => @player_name_text_edit.text, :ip => @ip_text_edit.text, :port => @port_text_edit.text}    
+    {
+      :player_name => @player_name_text_edit.text, 
+      :server_ip => @network_interfaces_combo_box.itemText(@network_interfaces_combo_box.currentIndex), 
+      :server_port => @port_text_edit.text, 
+      :client_ip => @ip_text_edit.text, 
+      :client_port => @port_text_edit2.text
+    }    
   end
 
   private :notify_game_created, :try_create_server, :run_as_server, 
