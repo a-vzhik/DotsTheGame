@@ -104,3 +104,34 @@ class Qt::Painter
 
   private :executeWithPen, :executeWithBrushAndPen, :isPolygon, :isPenOrNil, :isBrushOrNil, :isRect, :isPath
 end
+
+module WidgetExtensions
+  def setBackground(color_or_brush)
+    setAutoFillBackground(true)
+    current_palette = palette
+    if color_or_brush.class == Qt::Brush then
+      current_palette.setBrush(Qt::Palette::Background, color_or_brush)
+    else
+      current_palette.setColor(Qt::Palette::Background, color_or_brush)
+    end
+    setPalette(current_palette)
+  end
+
+  def setFontSize(newSize)
+    current_font = font
+    current_font.setPointSize newSize
+    setFont current_font
+  end
+end
+
+class Qt::Widget
+  include WidgetExtensions
+end
+
+class Qt::Label
+  include WidgetExtensions
+end
+
+class Qt::PushButton
+  include WidgetExtensions
+end

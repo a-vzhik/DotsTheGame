@@ -5,93 +5,121 @@ class LocalNetworkGameStartView < Qt::Widget
 
     settings = load
 
-    stack_layout = Qt::VBoxLayout.new do |l|
-      text_edit_width = 350
-      padding = 10
+    text_edit_width = 350
+    padding = 10
+    button_style = "QPushButton{padding:#{padding}px}"
 
-      label = Qt::Label.new('Enter a player name:')
-      l.addWidget(label)
 
-      @player_name_text_edit = Qt::LineEdit.new(settings[:player_name])
-      @player_name_text_edit.setMaximumWidth text_edit_width
-      l.addWidget(@player_name_text_edit)
+    main_layout = Qt::GridLayout.new do |gl|
+      gl.setAlignment Qt::AlignVCenter
 
-      l.addSpacerItem(Qt::SpacerItem.new(1,padding*3))
+      name_layout = Qt::VBoxLayout.new do |vl|
+        label = Qt::Label.new('Enter a player name:')
+        vl.addWidget(label)
 
-      label = Qt::Label.new('Enter an IP address:')
-      l.addWidget(label)
+        @player_name_text_edit = Qt::LineEdit.new(settings[:player_name])
+        @player_name_text_edit.setMaximumWidth text_edit_width
+        vl.addWidget(@player_name_text_edit)
+      end
+      gl.addLayout(name_layout, 0, 0, 1, -1, Qt::AlignHCenter)
 
-      @network_interfaces_combo_box = Qt::ComboBox.new
-      ip_index = 0
-      Socket.ip_address_list.each do |i|
-        if i.ipv4?
-          @network_interfaces_combo_box.addItem(i.ip_address)
-          ip_index = @network_interfaces_combo_box.count - 1 if i.ip_address == settings[:server_ip] 
-        end  
-      end  
-      @network_interfaces_combo_box.setCurrentIndex ip_index if @network_interfaces_combo_box.count > 0
-      @network_interfaces_combo_box.setMaximumWidth text_edit_width
-      l.addWidget(@network_interfaces_combo_box)
+      gl.addItem(Qt::SpacerItem.new(1, padding*5, Qt::SizePolicy::Fixed, Qt::SizePolicy::Fixed), 1, 0, 1, -1)
 
-      l.addSpacerItem(Qt::SpacerItem.new(1,padding))
+      gl.addWidget(Qt::Widget.new(), 2, 0)
 
-      label = Qt::Label.new('Enter a port:')
-      l.addWidget(label)
+      vbox_layout = Qt::GridLayout.new do |l|
+        title = Qt::Label.new('CREATE A NEW GAME: ')
+        title.setFontSize(title.font.pointSize*2)
+        l.addWidget(title, 0, 0, 1, -1)
 
-      @port_text_edit = Qt::LineEdit.new()
-      @port_text_edit.setInputMask '00000'
-      @port_text_edit.setText settings[:server_port]
-      @port_text_edit.setMaximumWidth text_edit_width
-      l.addWidget(@port_text_edit)
+        l.addItem(Qt::SpacerItem.new(1,padding), 1, 0, 1, -1)
 
-      l.addSpacerItem(Qt::SpacerItem.new(1,padding))
+        label = Qt::Label.new('IP address:')
+        l.addWidget(label, 2, 0, 1, 1)
 
-      @server_button = Qt::PushButton.new('Create a new game')
-      connect(@server_button, SIGNAL('clicked()'), self, SLOT('run_as_server()'))
-      l.addWidget(@server_button)
+        @network_interfaces_combo_box = Qt::ComboBox.new
+        ip_index = 0
+        Socket.ip_address_list.each do |i|
+          if i.ipv4?
+            @network_interfaces_combo_box.addItem(i.ip_address)
+            ip_index = @network_interfaces_combo_box.count - 1 if i.ip_address == settings[:server_ip]
+          end
+        end
+        @network_interfaces_combo_box.setCurrentIndex ip_index if @network_interfaces_combo_box.count > 0
+        @network_interfaces_combo_box.setMaximumWidth text_edit_width
+        l.addWidget(@network_interfaces_combo_box, 2, 1)
 
-      l.addSpacerItem(Qt::SpacerItem.new(1,padding*3))
-      
-      label = Qt::Label.new('Enter an IP address:')
-      l.addWidget(label)
+        #l.addItem(Qt::SpacerItem.new(1,padding), 1, 0, 1, -1)
 
-      @ip_text_edit = Qt::LineEdit.new(settings[:client_ip])
-      @ip_text_edit.setInputMask('000.000.000.000')
-      @ip_text_edit.setMaximumWidth text_edit_width
-      l.addWidget(@ip_text_edit)
-      
-      l.addSpacerItem(Qt::SpacerItem.new(1,padding))
+        label = Qt::Label.new('Enter a port:')
+        l.addWidget(label, 3, 0, 1, 1)
 
-      label = Qt::Label.new('Enter a port:')
-      l.addWidget(label)
+        @port_text_edit = Qt::LineEdit.new()
+        @port_text_edit.setInputMask '00000'
+        @port_text_edit.setText settings[:server_port]
+        @port_text_edit.setMaximumWidth text_edit_width
+        l.addWidget(@port_text_edit, 3, 1)
 
-      @port_text_edit2 = Qt::LineEdit.new()
-      @port_text_edit2.setInputMask '00000'
-      @port_text_edit2.setText settings[:client_port]
-      @port_text_edit2.setMaximumWidth text_edit_width
-      l.addWidget(@port_text_edit2)
+        l.addItem(Qt::SpacerItem.new(1,padding), 4, 0, 1, -1)
 
-      l.addSpacerItem(Qt::SpacerItem.new(1,padding))
+        @server_button = Qt::PushButton.new('Create') do |b|
+          b.setStyleSheet button_style
+        end
+        connect(@server_button, SIGNAL('clicked()'), self, SLOT('run_as_server()'))
+        l.addWidget(@server_button, 5, 0, 1, -1, Qt::AlignHCenter)
+      end
+      gl.addLayout(vbox_layout, 2, 1)
 
-      @client_button = Qt::PushButton.new('Join to a game')
-      connect(@client_button, SIGNAL('clicked()'), self, SLOT('run_as_client()'))
-      l.addWidget(@client_button)
+      gl.addItem(Qt::SpacerItem.new(padding*10, 1, Qt::SizePolicy::Fixed, Qt::SizePolicy::Fixed), 2, 2)
 
-      l.addSpacerItem(Qt::SpacerItem.new(1,padding))
+      vbox_layout = Qt::GridLayout.new do |l|
+        title = Qt::Label.new('JOIN AN EXISTING GAME: ')
+        title.setFontSize(title.font.pointSize*2)
+        l.addWidget(title, 0, 0, 1, -1)
+
+        l.addItem(Qt::SpacerItem.new(1,padding), 1, 0, 1, -1)
+
+        label = Qt::Label.new('Enter an IP address:')
+        l.addWidget(label, 2, 0)
+
+        @ip_text_edit = Qt::LineEdit.new(settings[:client_ip])
+        @ip_text_edit.setInputMask('000.000.000.000')
+        @ip_text_edit.setMaximumWidth text_edit_width
+        l.addWidget(@ip_text_edit, 2, 1)
+
+        label = Qt::Label.new('Enter a port:')
+        l.addWidget(label, 4, 0)
+
+        @port_text_edit2 = Qt::LineEdit.new()
+        @port_text_edit2.setInputMask '00000'
+        @port_text_edit2.setText settings[:client_port]
+        @port_text_edit2.setMaximumWidth text_edit_width
+        l.addWidget(@port_text_edit2, 4, 1)
+
+        l.addItem(Qt::SpacerItem.new(1,padding), 5, 0, 1, -1)
+
+        @client_button = Qt::PushButton.new('Join') do |b|
+          b.setStyleSheet button_style
+        end
+
+        connect(@client_button, SIGNAL('clicked()'), self, SLOT('run_as_client()'))
+        l.addWidget(@client_button, 6, 0, 1, -1, Qt::AlignHCenter)
+      end
+      gl.addLayout(vbox_layout, 2, 3)
+      gl.addWidget(Qt::Widget.new(), 2, 4)
+
       @message_label = Qt::Label.new
-      @message_label.setMaximumWidth text_edit_width
+      #@message_label.setMaximumWidth text_edit_width
       @message_label.setWordWrap true
-      l.addWidget(@message_label)
+      gl.addWidget(@message_label, 3, 0, 1, 5)
+
+      gl.setColumnStretch 0, 2
+      gl.setColumnStretch 1, 1
+      gl.setColumnStretch 3, 1
+      gl.setColumnStretch 4, 2
     end
 
-    grid_layout = Qt::GridLayout.new do |l|
-      l.setAlignment Qt::AlignVCenter
-      l.addWidget(Qt::Widget.new, 0, 0)
-      l.addLayout(stack_layout, 0, 1)
-      l.addWidget(Qt::Widget.new, 0, 2)
-    end
-
-     setLayout grid_layout
+    setLayout main_layout
   end
 
   def try_create_server (ip, port, &block)
@@ -208,6 +236,10 @@ class LocalNetworkGameStartView < Qt::Widget
       :client_ip => @ip_text_edit.text, 
       :client_port => @port_text_edit2.text
     }    
+  end
+
+  def button_style
+
   end
 
   private :notify_game_created, :try_create_server, :run_as_server, 
