@@ -28,9 +28,12 @@ class MainView < Qt::Widget
   end
 
   def run_local_network
-    view = LocalNetworkGameStartView.new @tab_control
-    view.on_game_created do |game_view|
-      add_and_activate_tab game_view, tr('Local network game')
+    model = LocalNetworkGameStartModel.new
+    view = LocalNetworkGameStartView.new(model, @tab_control)
+    controller = LocalNetworkGameStartController.new(model, view)
+
+    controller.when_game_created do |args|
+      add_and_activate_tab args[:data], tr('Local network game')
       remove_tab view
     end
     add_and_activate_tab view, tr('Local network game')
