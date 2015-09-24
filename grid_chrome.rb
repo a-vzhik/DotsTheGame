@@ -77,6 +77,20 @@ class GridChrome < Qt::Widget
       player.available_dots {|dot| path.addEllipse(coordinateF(dot), @dot_radius, @dot_radius)}
       painter.drawPath(player.settings.dot_fill, Qt::Pen.new(player.settings.capture_fill, 1), path)
     end
+	
+    # render the last dot of the passive player distinctly.	
+	pp = @game.passive_player
+	last_dot = pp.all_dots.last
+	if last_dot != nil
+	  path = Qt::PainterPath.new
+	  path.addEllipse(coordinateF(last_dot), @dot_radius*1.4, @dot_radius*1.4)
+      painter.drawPath(pp.settings.capture_fill, Qt::Pen.new(pp.settings.capture_fill, 1), path)
+		
+      path = Qt::PainterPath.new
+      path.addEllipse(coordinateF(last_dot), @dot_radius, @dot_radius)
+      painter.drawPath(pp.settings.dot_fill, Qt::Pen.new(pp.settings.capture_fill, 1), path)
+    end
+
 
     if @highlighted_dot != nil then
       path = Qt::PainterPath.new
