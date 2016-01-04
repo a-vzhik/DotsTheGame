@@ -3,6 +3,7 @@ require 'Qt'
 require 'json'
 require 'socket'
 
+require_relative './events.rb'
 require_relative './qt_extensions.rb'
 require_relative './timer.rb'
 require_relative './dot.rb'
@@ -22,23 +23,24 @@ require_relative './socket_game_controller.rb'
 require_relative './start_view.rb'
 require_relative './main_view.rb'
 require_relative './hot_seat_game_view.rb'
+require_relative './local_network_game_start_model.rb'
 require_relative './local_network_game_start_view.rb'
-require_relative './local_network_game_start_view.rb'
+require_relative './local_network_game_start_controller.rb'
 require_relative './player_settings.rb'
 require_relative './player_chrome.rb'
 
 app = Qt::Application.new(ARGV)
 
-#font_id = Qt::FontDatabase.addApplicationFont("PressStart2P.ttf")
-font_id = Qt::FontDatabase.addApplicationFont("Pixel LCD-7.ttf")
+#font_id = Qt::FontDatabase.addApplicationFont("./media/fonts/PressStart2P.ttf")
+font_id = Qt::FontDatabase.addApplicationFont("./media/fonts/Pixel LCD-7.ttf")
 
 families = Qt::FontDatabase.applicationFontFamilies(font_id)
 font = Qt::Font.new(families[0])
 font.setPointSize 10
 app.setFont font
-icon = Qt::Icon.new('trash.svg')
+#icon = Qt::Icon.new('trash.svg')
 #puts icon.availableSizes.count
-app.setWindowIcon icon
+#app.setWindowIcon icon
 
 
 MainView.new.show
