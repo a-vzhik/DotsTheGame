@@ -32,7 +32,7 @@ require_relative './player_chrome.rb'
 app = Qt::Application.new(ARGV)
 
 #font_id = Qt::FontDatabase.addApplicationFont("./media/fonts/PressStart2P.ttf")
-font_id = Qt::FontDatabase.addApplicationFont("./media/fonts/Pixel LCD-7.ttf")
+font_id = Qt::FontDatabase.addApplicationFont("media/fonts/Pixel LCD-7.ttf")
 
 families = Qt::FontDatabase.applicationFontFamilies(font_id)
 font = Qt::Font.new(families[0])
@@ -41,7 +41,6 @@ app.setFont font
 #icon = Qt::Icon.new('trash.svg')
 #puts icon.availableSizes.count
 #app.setWindowIcon icon
-
 
 MainView.new.show
 

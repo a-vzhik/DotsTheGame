@@ -42,7 +42,7 @@ class LocalNetworkGameStartModel
 
   def save (settings)
     begin
-      File.write('network.json', JSON.generate(settings))
+      File.write('config/network.json', JSON.generate(settings))
     rescue Exception => ex
       puts ex.inspect
     end
@@ -50,7 +50,7 @@ class LocalNetworkGameStartModel
 
   def load
     begin
-      JSON.parse(File.read('network.json'), {:symbolize_names => true})
+      JSON.parse(File.read('config/network.json'), {:symbolize_names => true})
     rescue Exception => ex
       puts ex.inspect
       {

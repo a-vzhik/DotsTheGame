@@ -21,7 +21,7 @@ class StartView < Qt::Widget
     buttons_layout.addSpacerItem(Qt::SpacerItem.new(1,50))
     buttons_layout.addWidget(local_network_button)
 
-    background_svg = Qt::SvgWidget.new('grid.svg')
+    background_svg = Qt::SvgWidget.new('media/icons/grid.svg')
 
     main_layout = Qt::GridLayout.new
 
