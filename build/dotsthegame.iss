@@ -5,10 +5,12 @@ DefaultDirName={userappdata}\DotsTheGame
 DefaultGroupName=DotsTheGame
 OutputDir=..\build
 OutputBaseFilename=DotsTheGameInstaller
+VersionInfoCompany=Alexander Zhevzhyk
 
 [Icons]
-Name: "{group}\DotsTheGame"; Filename: "{app}\dotsthegame.exe"
-Name: "{group}\Uninstall DotsTheGame"; Filename: "{uninstallexe}"
+Name: "{commondesktop}\Dots The Game"; Filename: "{app}\dotsthegame.exe"
+Name: "{group}\Dots The Game"; Filename: "{app}\dotsthegame.exe"
+Name: "{group}\Uninstall Dots The Game"; Filename: "{uninstallexe}"
 
 [Files]
 Source: "../source/media/fonts/*.*"; DestDir: "{app}/src/media/fonts"
